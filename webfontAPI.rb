@@ -50,20 +50,45 @@ class WebFonts
 		@retriever = theRetriever
 	end
 
-	def getAListOfProjectNames()
-		@message = "/rest/#{@format}/Projects/?wfspstart=0&wfsplimit=999"
+	def executeAPICall(params)
+		url_ending =  params['url_ending']
+		base_url = 'api.fonts.com'
+		authorization = createAuthorizationHeader(url_ending, @publicKey, @privateKey)	
+		full_url = base_url + url_ending
+
 		if @retriever == false
 			@retriever = PatronWrapper.new
 		end
+
 		curler = @retriever
-		curler.setBaseUrl("api.fonts.com/rest/#{@format}/Projects/?wfspstart=0&wfsplimit=999")
-		curler.addHeader('authorization', createAuthorizationHeader(@message, @publicKey, @privateKey))
+		curler.setBaseUrl(full_url)
+		curler.addHeader('authorization', authorization)
 		curler.addHeader('appkey', @applicationKey)
 		begin
 			JSON.parse(curler.getResponse())
 		rescue
 			JSON.parse('{}')
-		end
+		end	
+	end
+
+	def getAListOfProjectNames()
+		api_method = 'Projects'
+		query_parameters = '?wfspstart=0&wfsplimit=999'
+		url_ending = "/rest/#{@format}/#{api_method}/#{query_parameters}"
+
+		params = Hash.new
+	  params['url_ending'] = url_ending	
+		executeAPICall(params)
+	end
+
+	def getDomains(projectID)
+		api_method = 'Domains'
+		query_parameters = "?wfspstart=0&wfsplimit=999&wfspid=#{projectID}"
+		url_ending = "/rest/#{@format}/#{api_method}/#{query_parameters}"
+
+		params = Hash.new
+		params['url_ending'] = url_ending
+		executeAPICall(params)
 	end
 end
 
@@ -94,11 +119,5 @@ end
 
 class PatronWrapper
 	include PatronWrapper_module
-end
-
-module ProjectList_module
-	def parse(data)
-		JSON.parse(data)
-	end
 end
 

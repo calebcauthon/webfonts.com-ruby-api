@@ -77,6 +77,24 @@ describe WebFonts, '' do
 		webfonts.getAListOfProjectNames()
 	end
 
+	it 'should have a .getDomains(projectId)' do
+		webfonts = WebFonts.new
+		webfonts.getDomains('123')
+	end
+
+	it 'should executeAPI(params) on .getDomains(projectId)' do
+		projectID = 100
+		expected_url = "api.fonts.com/rest/json/Domains/?wfspstart=0&wfsplimit=999&wfspid=#{projectID}"
+
+		webfonts = WebFonts.new
+
+		retriever = URLRetriever.new
+		webfonts.setUrlRetriever(retriever)
+		webfonts.getDomains(projectID)
+
+		URLRetriever::base_url.should eq(expected_url)
+	end
+
 	it 'should have a .getAListOfProjectNames(format) method' do
 		webfonts = WebFonts.new
 		webfonts.setUrlRetriever(URLRetriever.new)
@@ -202,29 +220,4 @@ describe PatronWrapper, '' do
 		wrap = PatronWrapper.new
 		resp = wrap.setBaseUrl('test')
 	end
-end
-
-class ProjectResponse
-	include ProjectList_module
-end
-
-$json = '{ "Projects": {"Message": "Success", "PageLimit": "10", "PageStart": "0", "Project": [ {"ProjectKey": "1", "ProjectName": "mockProject" }], "TotalRecords": "1", "UserId": "112345", "UserRole": "Pro" }}'
-
-describe ProjectResponse, '' do			
-	it 'should exist' do
-	end
-
-	it 'should return a has with a "Projects" element' do
-		pr = ProjectResponse.new
-		parsedJSON = pr.parse($json)
-		parsedJSON['Projects'].should_not be_nil
-	end
-
-	it 'should return a projects element which contains a hash which has a Message element' do
-		pr = ProjectResponse.new
-		parsedJSON = pr.parse($json)
-		parsedJSON['Projects']['Message'].should_not be_nil
-	end
-
-
 end
