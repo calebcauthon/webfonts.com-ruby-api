@@ -1,89 +1,232 @@
-describe WebFonts, '' do
-	it 'should exist' do
+class MockREST
+	@@headers = false
+	@@url = false
+	def self.headers
+		@@headers
+	end
+	def self.url
+		@@url
 	end
 
-	it 'should use a default URLRetriever' do
-		webfonts = WebFonts.new
-		webfonts.getAListOfProjectNames()
+	@@response = false
+	def self.set_getRESTResponse_response(response)
+		@@response = response
+	end
+	def getRESTResponse(headers, url)
+		@@headers = headers
+		@@url = url
+		@@response
+	end	
+end
+
+class WebFontsAccountConfig
+	@@rest = false
+	def self.REST=(value)
+		@@rest = value
+	end
+	def self.REST
+		@@rest
 	end
 
-	it 'should have a .getDomains(projectId)' do
-		webfonts = WebFonts.new
-		webfonts.getDomains('123')
+	@@auth = false
+	def self.AUTH=(value)
+		@@auth = value
+	end
+	def self.AUTH
+		@@auth
 	end
 
-	it 'should executeAPI(params) on .getDomains(projectId)' do
-		projectID = 100
-		expected_url = "api.fonts.com/rest/json/Domains/?wfspstart=0&wfsplimit=999&wfspid=#{projectID}"
-
-		webfonts = WebFonts.new
-
-		retriever = URLRetriever.new
-		webfonts.setUrlRetriever(retriever)
-		webfonts.getDomains(projectID)
-
-		URLRetriever::base_url.should eq(expected_url)
+	def self.headerConstructor=(value)
 	end
-
-	it 'should return the result of the domain parser' do
-		projectID = 100
-		expected_url = "api.fonts.com/rest/json/Domains/?wfspstart=0&wfsplimit=999&wfspid=#{projectID}"
-
-		webfonts = WebFonts.new
-
-		DomainParser::setResult('123')
-
-		retriever = URLRetriever.new
-		webfonts.setUrlRetriever(retriever)
-		result = webfonts.getDomains(projectID)
-
-		result.should eq('123')
+	def self.urlConstructor=(value)
 	end
-
-	it 'should have a .getAListOfProjectNames(format) method' do
-		webfonts = WebFonts.new
-		webfonts.setUrlRetriever(URLRetriever.new)
-		webfonts.getAListOfProjectNames()
+	@@parser = false
+	def self.parser=(value)
+		@@parser = value
 	end
-
-	it 'should default to json format' do
-		webfonts = WebFonts.new
-		webfonts.format.should eq('json')
-	end
-
-	it 'should send the proper request when .getAListOfProjectNames is executed' do
-		publicKey = '12345678'
-		privateKey = 'abcdefghjijk'
-		appKey = 'qwertasdf'
-		format = 'json'
-
-		urlRetriever = URLRetriever.new
-
-		webfonts = WebFonts.new
-		webfonts.setUrlRetriever(urlRetriever)
-		webfonts.format = format
-		webfonts.publicKey = publicKey
-		webfonts.privateKey = privateKey
-		webfonts.applicationKey = appKey
-
-		webfonts.getAListOfProjectNames()
-
-		URLRetriever::base_url.should eq('api.fonts.com/rest/json/Projects/?wfspstart=0&wfsplimit=999')
-		URLRetriever::headers['authorization'].should eq('12345678%3Akwu0Aw1JW2ZlzUU%2FXUQ7qA%3D%3D')
-		URLRetriever::headers['appkey'].should eq('qwertasdf')
-	end
-
-	it 'should return the response of the of the json parser' do
-			retriever = URLRetriever.new
-			retriever.setResponse('{"projects": [1,2,3]}')
-			webfonts = WebFonts.new
-			webfonts.setUrlRetriever(retriever)
-			resp = webfonts.getAListOfProjectNames()
-
-			expected_output = JSON.parse('{"projects": [1,2,3]}')
-			 
-			resp.should eq(expected_output)
+	def self.parser
+		@@parser
 	end
 end
 
+class MockAUTH
+	@@url = false
+	def self.url
+		@@url
+	end
 
+	@@privateKey = false
+	def self.privateKey
+		@@privateKey
+	end
+
+	@@publicKey = false
+	def self.publicKey
+		@@publicKey
+	end
+
+	def createAuthorizationHeader(url, publicKey, privateKey)
+		@@url = url
+		@@privateKey = privateKey
+		@@publicKey = publicKey
+	end
+end
+
+describe MockAUTH, '' do
+	it 'should exist' do
+	end
+	it 'should set .url, .publicKey, .privateKey to whatever is passed into .createAuthorizationHeader' do
+		publicKey = 'abc'
+		privateKey = 'xyz'
+		url = 'www.website.com'
+
+		auth = MockAUTH.new
+		auth.createAuthorizationHeader(url, publicKey, privateKey)
+
+		MockAUTH.url.should eq(url)
+		MockAUTH.privateKey.should eq(privateKey)
+		MockAUTH.publicKey.should eq(publicKey)
+	end
+end
+
+describe WebFontsAccountConfig, '' do
+	it 'should exist' do
+	end
+	it 'should have a .REST and .REST=' do
+		WebFontsAccountConfig.REST = 'xyz'
+		WebFontsAccountConfig.REST.should eq('xyz')
+	end
+	it 'should have a .AUTH and a .AUTH=' do
+		WebFontsAccountConfig.AUTH = 'abc'
+		WebFontsAccountConfig.AUTH.should eq('abc')
+	end
+	it 'should have a .parser and a .parser=' do
+		WebFontsAccountConfig.parser = '123'
+		WebFontsAccountConfig.parser.should eq('123')
+	end
+end
+
+describe MockREST, '' do
+	it 'should exist' do 
+	end
+	it 'should set headers to whatever the value1 of MockREST.new.getRESTRespone(value1, value2) is' do
+		MockREST.headers.should_not eq('headers')
+		MockREST.new.getRESTResponse('headers', true)
+
+		MockREST.headers.should eq('headers')
+	end
+
+	it 'should set the url to whatever the value2 of MockREST.new.getRESTResponse(value1, value2) is' do
+		MockREST.url.should_not eq('www.url.com')
+		MockREST.new.getRESTResponse('headers', 'www.url.com')
+
+		MockREST.url.should eq('www.url.com')
+	end
+
+	context '.getRESTResponse' do 
+		it 'should return whatever was set with .set_getRESTResponse_response' do
+			MockREST.set_getRESTResponse_response('SOLID')
+			rest = MockREST.new
+			response = rest.getRESTResponse(true, true)
+			response.should eq('SOLID')
+
+		end
+	end
+
+end
+
+class MockFullUrlConstructor
+	def self.set_createFullUrl_response(response)
+	end
+end
+
+class MockHeadersConstructor
+	def self.set_createHeaders_response(response)
+	end
+end
+
+class MockParser
+	@@response = false
+	def self.set_parseProjectsList_response(response)
+		@@response = response
+	end
+	@@input = false
+	def self.input
+		@@input
+	end
+	def parseProjects(unparsedText)
+		@@input = unparsedText
+		@@response
+	end
+
+end
+
+describe WebFontsAccount, '' do
+	it 'should exist' do
+	end
+	context '.getAListOfProjectNames' do
+		it 'should return the parsed results of getRESTResponse(headers, url)' do
+			headers = Hash.new
+			headers['name'] = 'Pete'
+			headers['day'] = 'Tuesday'
+			MockFullUrlConstructor.set_createFullUrl_response('www.example.com')
+			MockHeadersConstructor.set_createHeaders_response(headers)
+
+			MockParser.set_parseProjectsList_response('alarm')
+			
+			MockREST.set_getRESTResponse_response('text123')
+
+			WebFontsAccountConfig.headerConstructor = MockHeadersConstructor.new
+			WebFontsAccountConfig.urlConstructor = MockFullUrlConstructor.new
+			WebFontsAccountConfig.parser = MockParser.new
+			WebFontsAccountConfig.REST = MockREST.new
+
+			account = WebFontsAccount.new
+			accountResponse = account.getAListOfProjectNames()
+
+			accountResponse.should eq('alarm')
+			MockParser.input.should eq('text123')
+		end
+	end
+	context 'REST' do
+		it 'should have a method for calling REST methods' do
+			headers = Array.new
+			url = 'http://www.example.com'
+
+			WebFontsAccountConfig.REST = MockREST.new
+			account = WebFontsAccount.new
+			account.getRESTResponse(headers, url)
+		end
+
+		it 'should use whatevers in Config.REST for .getRestResponse' do
+			WebFontsAccountConfig.REST = MockREST.new
+			
+			account = WebFontsAccount.new
+			account.getRESTResponse('this header', 'url')
+
+			MockREST.headers.should eq('this header')
+			MockREST.url.should eq('url')
+		end
+
+		it 'should use whatevers in Config.AUTH for .getAuthorizationHeader' do
+			WebFontsAccountConfig.AUTH = MockAUTH.new
+
+			account = WebFontsAccount.new
+			account.getAuthorizationHeader('url', 'pubkey', 'privkey')
+
+			MockAUTH.url.should eq('url')
+			MockAUTH.publicKey.should eq('pubkey')
+			MockAUTH.privateKey.should eq('privkey')
+		end
+	end
+
+	context 'auth' do
+		it 'should have a parameter that expect 3 parameters - url, public key, private key' do
+			account = WebFontsAccount.new
+			account.getAuthorizationHeader('url', 'pubkey', 'privkey') 
+		end
+
+		it 'should pass those parameters on to whatever is in WebFontsAccountConfig.AUTH.getAuthorizationHeader(a,b,c)' do
+		end
+	end
+end
