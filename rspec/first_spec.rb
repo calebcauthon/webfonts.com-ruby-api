@@ -1,9 +1,6 @@
-require '../webfontAPI.rb'
-#require 'hash_HMAC_spec.rb'
-#require 'auth_header_spec.rb'
-#require 'mock_url_retriever.rb'
-#require 'mock_domain_parser.rb'
-require 'webfonts_spec.rb'
-#require 'mock_session.rb'
-#require 'patron_wrapper_spec.rb'
-#require 'domain_parser_spec.rb'
+require File.expand_path(File.dirname(__FILE__) + '/all_mocks.rb')
+require File.expand_path(File.dirname(__FILE__) + '/../webfontAPI.rb')
+require File.expand_path(File.dirname(__FILE__) + '/webfonts_spec.rb')
+require File.expand_path(File.dirname(__FILE__) + '/webfontsAccountConfig_spec.rb')
+require File.expand_path(File.dirname(__FILE__) + '/mock_AUTH_spec.rb')
+require File.expand_path(File.dirname(__FILE__) + '/mock_REST_spec.rb')
